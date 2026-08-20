@@ -1,0 +1,25 @@
+flowchart TD
+    subgraph FILES["📁 /root/models/gemma-4-E4B/ — 8 ไฟล์โมเดล"]
+        A["model.safetensors<br/>(15.99 GB) น้ำหนักทั้งหมด"]
+        B["config.json<br/>พิมพ์เขียวสถาปัตยกรรม"]
+        C["generation_config.json<br/>ค่า sampling"]
+        D["processor_config.json<br/>ค่าประมวลผลภาพ/เสียง"]
+        E["tokenizer.json<br/>BPE vocab 262K"]
+        F["tokenizer_config.json<br/>special tokens"]
+        G["README.md<br/>model card + วิธีใช้"]
+        H[".gitattributes<br/>LFS rules"]
+    end
+
+    subgraph LOAD["🔧 Transformers Loading"]
+        L1["AutoModelForMultimodalLM<br/>.from_pretrained()"]
+        L2["AutoProcessor<br/>.from_pretrained()"]
+    end
+
+    A -->|"น้ำหนัก"| L1
+    B -->|"โครงสร้าง layer"| L1
+    C -->|"ค่า generate default"| L1
+    E -->|"vocab + merge"| L2
+    F -->|"special tokens"| L2
+    D -->|"image/audio/video config"| L2
+    G -.->|"คู่มือมนุษย์"| L1
+    H -.->|"git เก็บไฟล์ใหญ่"| A

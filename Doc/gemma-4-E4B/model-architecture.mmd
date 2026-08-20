@@ -1,0 +1,44 @@
+flowchart LR
+    subgraph INPUT["🎯 Input"]
+        TXT["📝 Text"]
+        IMG["🖼️ Image"]
+        AUD["🎵 Audio"]
+        VID["🎬 Video"]
+    end
+
+    subgraph PROC["⚙️ Processor (Gemma4Processor)"]
+        P1["Tokenizer BPE<br/>262K vocab"]
+        P2["ImageProcessor<br/>patch 16x16 → 280 tokens"]
+        P3["AudioFeatureExtractor<br/>16kHz → mel 128 bins"]
+        P4["VideoProcessor<br/>32 frames → 70 tokens"]
+    end
+
+    subgraph MODEL["🧠 Gemma4ForConditionalGeneration"]
+        subgraph VISION["Vision Tower ~150M"]
+            V1["patch_embedder<br/>input_proj + pos_embed"]
+            V2["16 layers<br/>hidden 768, 12 heads"]
+        end
+        subgraph AUDIO["Audio Tower ~300M"]
+            A1["subsample_conv<br/>conv 3x3 x2"]
+            A2["12 layers<br/>hidden 1024, 8 heads"]
+            A3["output_proj → 1536"]
+        end
+        subgraph EMBED["Embedding Projections"]
+            E1["embed_vision<br/>768 → 2560"]
+            E2["embed_audio<br/>1536 → 2560"]
+            E3["embed_tokens<br/>262144 x 2560"]
+            E4["embed_tokens_per_layer (PLE)<br/>262144 x 10752"]
+        end
+        subgraph LM["Language Model 42 layers"]
+            L1["Hybrid Attention<br/>sliding 512 / full global"]
+            L2["MLP 10240"]
+            L3["per_layer_projection<br/>(PLE gate)"]
+        end
+        OUT["Output Logits 262K"]
+    end
+
+    TXT --> P1 --> E3 --> LM
+    IMG --> P2 --> V1 --> V2 --> E1 --> LM
+    AUD --> P3 --> A1 --> A2 --> A3 --> E2 --> LM
+    VID --> P4 --> V1
+    LM --> OUT
