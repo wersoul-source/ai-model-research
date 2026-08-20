@@ -1,19 +1,22 @@
-# รายงานสรุปรวม — การศึกษาทั้ง 8 ไฟล์ของ Gemma 4 E4B
+# รายงานสรุปรวม — การศึกษาทั้ง 9 ไฟล์ของ Gemma 4 E4B-it
 
-> Session: 2026-08-20-S39 | Skill: diagnose-gemma-4 | ตรวจสอบจริงที่ `/root/models/gemma-4-E4B/`
+> Session: 2026-08-20-S39B (อัปเดตเป็นรุ่น -it) | Skill: diagnose-gemma-4 | ตรวจสอบจริงที่ `/root/models/gemma-4-E4B-it/`
 
-## 1. ตารางสรุปทั้ง 8 ไฟล์
+## 1. ตารางสรุปทั้ง 9 ไฟล์
 
 | # | ไฟล์ | ขนาด | หน้าที่ | กลุ่ม |
 |---|------|------|---------|------|
 | 1 | model.safetensors | 15.99 GB | น้ำหนักโมเดล (2,130 tensors, BF16) | ตัวโมเดล |
 | 2 | config.json | 5.0 KB | พิมพ์เขียวสถาปัตยกรรม (3 sub-config) | ตัวโมเดล |
-| 3 | generation_config.json | 181 B | ค่า default การ generate | ตัวโมเดล |
+| 3 | generation_config.json | 208 B | ค่า default การ generate (eos = [1,106,50]) | ตัวโมเดล |
 | 4 | processor_config.json | 1.6 KB | วิธีแปลงภาพ/เสียง/วิดีโอ → tokens | ตัวแปลง input |
 | 5 | tokenizer.json | 31 MB | vocab BPE 262K + กฎตัดคำ | ตัวแปลง input |
-| 6 | tokenizer_config.json | 881 B | ชื่อ special tokens + ตั้งค่า | ตัวแปลง input |
-| 7 | README.md | 27 KB | model card + วิธีใช้ + benchmark | เอกสาร |
-| 8 | .gitattributes | 1.5 KB | กฎ Git LFS | ระบบ |
+| 6 | tokenizer_config.json | 3.1 KB | ชื่อ special tokens + ตั้งค่า | ตัวแปลง input |
+| 7 | **chat_template.jinja** | 18.6 KB | **chat template (ใหม่ในรุ่น -it)** | ตัวแปลง input |
+| 8 | README.md | 27 KB | model card + วิธีใช้ + benchmark | เอกสาร |
+| 9 | .gitattributes | 1.5 KB | กฎ Git LFS | ระบบ |
+
+> **รุ่น -it ต่างจาก base:** เพิ่ม `chat_template.jinja` (9 ไฟล์ vs 8 ไฟล์) + `eos_token_id` เป็น array + tokenizer_config ใหญ่ขึ้น (3.1K vs 881B)
 
 ## 2. ความสัมพันธ์ระหว่างไฟล์ (Data Flow)
 
@@ -89,10 +92,11 @@ Input: ข้อความ + ภาพ + เสียง + วิดีโอ
 |--------|------|
 | model.safetensors | (รายงานในแชท Session S39 — 30/30 PASS) |
 | config.json | `REPORT-config.json.md` |
-| generation_config.json | `REPORT-generation_config.json.md` |
+| generation_config.json | `REPORT-generation_config.json.md` (อัปเดต eos array) |
 | processor_config.json | `REPORT-processor_config.json.md` |
 | tokenizer.json | `REPORT-tokenizer.json.md` |
 | tokenizer_config.json | `REPORT-tokenizer_config.json.md` |
+| chat_template.jinja | `REPORT-chat_template.jinja.md` (ใหม่) |
 | README.md | `REPORT-README.md.md` |
 | .gitattributes | `REPORT-.gitattributes.md` |
 
