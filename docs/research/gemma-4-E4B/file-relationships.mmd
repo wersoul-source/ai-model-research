@@ -1,13 +1,14 @@
 flowchart TD
-    subgraph FILES["📁 /root/models/gemma-4-E4B/ — 8 ไฟล์โมเดล"]
-        A["model.safetensors<br/>(15.99 GB) น้ำหนักทั้งหมด"]
-        B["config.json<br/>พิมพ์เขียวสถาปัตยกรรม"]
-        C["generation_config.json<br/>ค่า sampling"]
-        D["processor_config.json<br/>ค่าประมวลผลภาพ/เสียง"]
+    subgraph FILES["📁 /root/models/gemma-4-E4B-it/ — 9 ไฟล์โมเดล (instruction-tuned)"]
+        A["model.safetensors<br/>(15.99 GB) น้ำหนักทั้งหมด<br/>2,130 tensors BF16"]
+        B["config.json<br/>พิมพ์เขียวสถาปัตยกรรม<br/>(text/vision/audio config)"]
+        C["generation_config.json<br/>eos = [1,106,50]<br/>temp 1.0 / top_p 0.95 / top_k 64"]
+        D["processor_config.json<br/>ค่าประมวลผลภาพ/เสียง/วิดีโอ"]
         E["tokenizer.json<br/>BPE vocab 262K"]
-        F["tokenizer_config.json<br/>special tokens"]
+        F["tokenizer_config.json<br/>special tokens + response_schema<br/>(tool-calling JSON schema)"]
         G["README.md<br/>model card + วิธีใช้"]
         H[".gitattributes<br/>LFS rules"]
+        I["chat_template.jinja<br/>⭐ NEW (it เท่านั้น)<br/>canonical chat template"]
     end
 
     subgraph LOAD["🔧 Transformers Loading"]
@@ -19,7 +20,8 @@ flowchart TD
     B -->|"โครงสร้าง layer"| L1
     C -->|"ค่า generate default"| L1
     E -->|"vocab + merge"| L2
-    F -->|"special tokens"| L2
+    F -->|"special tokens + schema"| L2
     D -->|"image/audio/video config"| L2
+    I -->|"chat template<br/>(apply_chat_template)"| L2
     G -.->|"คู่มือมนุษย์"| L1
     H -.->|"git เก็บไฟล์ใหญ่"| A
