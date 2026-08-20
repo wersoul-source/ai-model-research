@@ -99,6 +99,7 @@ Input: ข้อความ + ภาพ + เสียง + วิดีโอ
 | chat_template.jinja | `REPORT-chat_template.jinja.md` (ใหม่) |
 | README.md | `REPORT-README.md.md` |
 | .gitattributes | `REPORT-.gitattributes.md` |
+| หลักการสร้าง base vs it | `REPORT-principles.md` (ใหม่ — 12 ข้อ base + 12 ข้อ it + เปรียบเทียบ) |
 
 ---
 
