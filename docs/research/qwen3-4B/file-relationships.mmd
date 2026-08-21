@@ -1,0 +1,31 @@
+flowchart TD
+    subgraph FILES["📁 /root/models/Qwen3-4B/ — 13 ไฟล์ (sharded safetensors)"]
+        A1["model-00001-of-00003.safetensors<br/>(3.96 GB, 174 tensors)"]
+        A2["model-00002-of-00003.safetensors<br/>(3.99 GB, 219 tensors)"]
+        A3["model-00003-of-00003.safetensors<br/>(99 MB, 5 tensors)"]
+        IDX["model.safetensors.index.json<br/>weight_map 398 tensors<br/>total 8.04 GB"]
+        B["config.json<br/>36 layers, GQA 32/8, RoPE 1M"]
+        C["generation_config.json<br/>eos [151645,151643]<br/>temp 0.6 / top_p 0.95 / top_k 20"]
+        D["tokenizer.json<br/>BBPE vocab 151643<br/>merges 151387"]
+        E["tokenizer_config.json<br/>chat_template<br/>enable_thinking + tool_call"]
+        F["vocab.json<br/>2.8 MB"]
+        G["merges.txt<br/>1.7 MB"]
+        H["README.md<br/>model card + thinking mode"]
+        I["LICENSE<br/>Apache 2.0"]
+        J[".gitattributes<br/>LFS rules"]
+    end
+
+    subgraph LOAD["🔧 Transformers Loading"]
+        L1["AutoModelForCausalLM<br/>.from_pretrained()<br/>+ index.json → 3 shards"]
+        L2["AutoTokenizer<br/>.from_pretrained()<br/>+ merges.txt/vocab.json"]
+    end
+
+    A1 & A2 & A3 --> IDX --> L1
+    B -->|"โครงสร้าง 36 layers"| L1
+    C -->|"ค่า generate default"| L1
+    D -->|"vocab + merges"| L2
+    E -->|"chat_template<br/>thinking mode"| L2
+    F -->|"vocab"| L2
+    G -->|"BPE merges"| L2
+    H -.->|"คู่มือมนุษย์"| L1
+    J -.->|"git LFS"| A1

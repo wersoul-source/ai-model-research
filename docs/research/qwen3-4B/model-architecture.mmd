@@ -1,0 +1,46 @@
+flowchart LR
+    subgraph INPUT["🎯 Input"]
+        TXT["📝 Text<br/>+ /think /no_think"]
+        TOOL["🔧 Tools<br/>MCP / Qwen-Agent"]
+    end
+
+    subgraph TOK["⚙️ Tokenizer (Qwen2Tokenizer)"]
+        T1["BBPE<br/>vocab 151643 + 26 added<br/>merges 151387"]
+        T2["Chat Template<br/>enable_thinking<br/><think> / </think>"]
+        T3["Tool Template<br/><tool_call> JSON"]
+    end
+
+    subgraph MODEL["🧠 Qwen3ForCausalLM — 36 layers"]
+        subgraph EMBED["Embedding"]
+            E1["embed_tokens<br/>151936 x 2560<br/>tie_word_embeddings"]
+        end
+        subgraph LAYERS["36 x Transformer Block"]
+            subgraph ATTN["Attention (GQA 32/8 + QK-Norm)"]
+                Q["q_proj [4096,2560]<br/>+ q_norm [128]"]
+                K["k_proj [1024,2560]<br/>+ k_norm [128]"]
+                V["v_proj [1024,2560]"]
+                O["o_proj [2560,4096]"]
+            end
+            subgraph MLP["MLP (SwiGLU)"]
+                G["gate_proj [9728,2560]"]
+                U["up_proj [9728,2560]"]
+                D["down_proj [2560,9728]"]
+            end
+            N1["input_layernorm<br/>post_attention_layernorm<br/>RMSNorm"]
+        end
+        NORM["norm [2560]<br/>RMSNorm"]
+        subgraph ROPE["RoPE + YaRN"]
+            R["theta 1M + ABF<br/>YaRN factor 4<br/>32K → 128K"]
+        end
+        OUT["Output Logits 151936<br/>eos [151645,151643]"]
+    end
+
+    TXT --> T1 --> T2 --> E1 --> LAYERS
+    TOOL --> T3 --> T2
+    E1 --> Q & K & V
+    Q --> O --> N1
+    K --> O
+    V --> O
+    N1 --> G & U --> D --> NORM --> OUT
+    R -.-> Q
+    R -.-> K
