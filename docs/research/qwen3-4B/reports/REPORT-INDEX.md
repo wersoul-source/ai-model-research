@@ -1,6 +1,6 @@
-# รายงานสรุปรวม — การศึกษาทั้ง 13 ไฟล์ของ Qwen3-4B
+# รายงานสรุปรวม — การศึกษาทั้ง 13 ไฟล์ของ Qwen3-4B + GGUF Q4_K_M
 
-> Session: 2026-08-21-S41 | Skill: diagnose-qwen3 (63/63 PASS) | ตรวจสอบจริงที่ `/root/models/Qwen3-4B/`
+> Session: 2026-08-21-S41 (safetensors) + S41-GGUF (Q4_K_M 13/13 PASS) | Skill: diagnose-qwen3 v1.1.0 (63/63 + 13/13 PASS) | ตรวจสอบจริงที่ `/root/models/Qwen3-4B/` + `/root/models/Qwen3-4B-GGUF/`
 
 ## 1. ตารางสรุปทั้ง 13 ไฟล์
 
@@ -19,8 +19,10 @@
 | 11 | README.md | 16.9 K | model card + thinking mode + YaRN | เอกสาร |
 | 12 | LICENSE | 11 K | Apache 2.0 | เอกสาร |
 | 13 | .gitattributes | 1.6 K | Git LFS rules | ระบบ |
+| 14 | Qwen3-4B-Q4_K_M.gguf | 2.50 GB | GGUF Q4_K_M (398 tensors, 216 Q4_K + 37 Q6_K + 145 F32) | ตัวโมเดล (GGUF) |
 
 > **Sharded vs single-file:** Qwen3-4B แบ่ง 3 shards (~4GB/shard) + index.json — Gemma 4 E4B ไฟล์เดียว 16GB — sharded ช่วยให้ resume ง่าย
+> **safetensors vs GGUF:** BF16 8.04 GB (3 shards) vs Q4_K_M 2.50 GB (1 file, 71% saved) — 398 tensors เท่ากัน แค่ packing ต่าง (ดู REPORT-GGUF.md + gguf-comparison.svg)
 
 ## 2. ความสัมพันธ์ระหว่างไฟล์ (Data Flow)
 
@@ -107,6 +109,7 @@ Output logits 151936 → softmax → ข้อความ (+ <think> reasoning 
 | README.md | `REPORT-README.md.md` |
 | .gitattributes | `REPORT-.gitattributes.md` |
 | หลักการสร้าง 12 ข้อ | `REPORT-principles.md` |
+| GGUF Q4_K_M | `REPORT-GGUF.md` (safetensors vs GGUF, 71% saved, 12 ข้อ) |
 
 ---
 
