@@ -1,0 +1,24 @@
+flowchart LR
+    subgraph LOAD["📦 กลุ่มโหลดโมเดล (16.2 GB)"]
+        C["config.json<br/>855 B — พิมพ์เขียว 32 layers<br/>GQA 32/8, RoPE θ=500K<br/>llama3 scaling 8K→128K"]
+        IDX["model.safetensors.index.json<br/>24K — weight_map 291 tensors<br/>total_size 16,060,522,496"]
+        S1["shard 1: 5.0G<br/>82 tensors / 2.49B"]
+        S2["shard 2: 5.0G<br/>104 tensors / 2.50B"]
+        S3["shard 3: 4.9G<br/>100 tensors / 2.46B"]
+        S4["shard 4: 1.2G<br/>5 tensors / 584M<br/>(embed+lm_head+norm)"]
+        GEN["generation_config.json<br/>184 B — eos [128001,128008,128009]"]
+    end
+
+    subgraph TOK["🔤 กลุ่ม tokenizer (9 MB)"]
+        TJ["tokenizer.json 8.7M<br/>BPE vocab 128,000 + merges 280,147<br/>added_tokens 256 → รวม 128,256"]
+        TC["tokenizer_config.json 50K<br/>PreTrainedTokenizerFast"]
+        STM["special_tokens_map.json<br/>bos/eos"]
+    end
+
+    C --> S1 & S2 & S3 & S4
+    IDX -. map .-> S1 & S2 & S3 & S4
+    GEN --> OUT["generate()"]
+    TJ & TC & STM --> PROMPT["&lt;|begin_of_text|&gt;...&lt;|eot_id|&gt;<br/>chat format"]
+
+    style LOAD fill:#ffebee
+    style TOK fill:#e1f5ff
