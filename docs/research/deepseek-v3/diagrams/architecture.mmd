@@ -1,0 +1,18 @@
+graph TD
+  A[Input vocab 129280 → hidden 7168] --> B[Layers 0-2: Dense FFN 18432 + MLA]
+  B --> C[Layers 3-60: MLA + DeepSeekMoE x58]
+  C --> D[MTP Layer 61: Emb + OutHead + TRM]
+  D --> E[Output 7168 → 129280]
+
+  subgraph MLA [MLA per layer]
+    M1[W_DKV: 7168→512 cKV cache] --> M2[W_UK/W_UV: 512→16384]
+    M1 --> M3[W_KR: 7168→64 kR RoPE]
+  end
+
+  subgraph MoE [MoE per layer 58x]
+    R1[Router sigmoid noaux_tc] --> R2[Group 8→top4]
+    R2 --> R3[Top-8 routed +1 shared *2.5]
+  end
+
+  C -.-> MLA
+  C -.-> MoE

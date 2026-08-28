@@ -1,0 +1,25 @@
+flowchart TB
+    subgraph LLAMA["🦙 Llama 3.1 8B Instruct — GGUF Q4_K_M 4.92 GB"]
+        L1["32 layers<br/>hidden 4096<br/>GQA 32Q/8KV head_dim 128<br/>SwiGLU 14336"]
+        L2["vocab 128,256<br/>NO tie embeddings<br/>embed + lm_head แยก"]
+        L3["RoPE θ=500K<br/>scaling llama3 (factor 8)<br/>8K→128K native"]
+        L4["NO QK-Norm<br/>RMSNorm eps 1e-5<br/>eos [128001,128008,128009]"]
+    end
+
+    subgraph QWEN["⚡ Qwen3-4B — GGUF Q4_K_M 2.50 GB"]
+        Q1["36 layers<br/>hidden 2560<br/>GQA 32Q/8KV head_dim 128<br/>SwiGLU 9728"]
+        Q2["vocab 151,936<br/>tie embeddings<br/>embed = lm_head"]
+        Q3["RoPE θ=1M<br/>scaling yarn (factor 4)<br/>32K→128K"]
+        Q4["QK-Norm ✓<br/>RMSNorm eps 1e-6<br/>thinking mode <think>"]
+    end
+
+    subgraph SAME["✅ เหมือนกัน"]
+        S["GQA 32/8 · head_dim 128 · SwiGLU<br/>BF16 origin · GGUF Q4_K_M packing<br/>llama.cpp ecosystem"]
+    end
+
+    L1 & L2 & L3 & L4 --> S
+    Q1 & Q2 & Q3 & Q4 --> S
+
+    style LLAMA fill:#ffebee
+    style QWEN fill:#e1f5ff
+    style SAME fill:#e8f5e9

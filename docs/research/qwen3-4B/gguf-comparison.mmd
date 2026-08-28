@@ -1,0 +1,25 @@
+flowchart LR
+    subgraph SAFE["📦 Safetensors (BF16) — 8.04 GB"]
+        S1["3 shards<br/>174 + 219 + 5 = 398 tensors<br/>BF16 100%"]
+        S2["index.json<br/>weight_map"]
+        S3["8.04 GB RAM<br/>transformers"]
+    end
+
+    subgraph GGUF["📦 GGUF (Q4_K_M) — 2.50 GB"]
+        G1["1 file<br/>398 tensors<br/>216 Q4_K + 37 Q6_K + 145 F32"]
+        G2["header GGUF v3<br/>KV 31 + chat_template"]
+        G3["2.50 GB RAM<br/>llama.cpp<br/>71% saved"]
+    end
+
+    subgraph COMMON["🧠 Architecture เดียวกัน"]
+        A["36 layers, GQA 32/8<br/>QK-Norm, SwiGLU 9728<br/>RoPE 1M, vocab 151936"]
+    end
+
+    S1 & S2 --> A
+    G1 & G2 --> A
+    A --> S3
+    A --> G3
+
+    style SAFE fill:#e1f5ff
+    style GGUF fill:#fff4e1
+    style COMMON fill:#e8f5e9

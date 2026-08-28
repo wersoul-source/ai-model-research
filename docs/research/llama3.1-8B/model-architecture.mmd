@@ -1,0 +1,24 @@
+flowchart TB
+    IN["Input: text + chat format<br/><&#124;start_header_id&#124;>user<&#124;end_header_id&#124;>"]
+    TOK["BPE Tokenizer<br/>vocab 128,256 (128K base + 256 special)<br/>merges 280,147"]
+    EMB["embed_tokens [128256, 4096]<br/>BF16 — ไม่ tie กับ lm_head"]
+
+    subgraph BLOCK["🔁 Transformer Block × 32 (9 tensors/layer)"]
+        direction TB
+        LN1["input_layernorm (RMSNorm eps 1e-05)"]
+        ATT["Self-Attention GQA:<br/>q_proj [4096,4096] · k_proj/v_proj [1024,4096]<br/>o_proj [4096,4096] · head_dim 128<br/>RoPE θ=500K + llama3 scaling (8K→128K)<br/>❌ NO QK-Norm"]
+        LN2["post_attention_layernorm"]
+        MLP["SwiGLU MLP:<br/>gate_proj/up_proj [14336,4096]<br/>down_proj [4096,14336]"]
+        LN1 --> ATT --> LN2 --> MLP
+    end
+
+    NORM["model.norm (RMSNorm)"]
+    HEAD["lm_head [128256, 4096]<br/>แยกจาก embed (tie=false)"]
+    OUT["Output logits 128,256 → token<br/>eos: eot_id 128009 / eom_id 128008"]
+
+    IN --> TOK --> EMB --> BLOCK
+    BLOCK --> NORM --> HEAD --> OUT
+
+    style BLOCK fill:#fff4e1
+    style ATT fill:#ffcdd2
+    style HEAD fill:#e8f5e9
