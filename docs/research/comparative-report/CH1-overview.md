@@ -4,15 +4,16 @@
 
 ## 1.1 ขอบเขตการวิจัย (BOI X-1 Knowledge Synthesis)
 
-งานวิจัยนี้ศึกษา **โมเดลภาษาขนาดเล็ก–กลาง 3 ตระกูล** แบบ "เปิดดูของจริง" — ไม่ใช่อ่าน model card แล้วเชื่อ แต่ **โหลดไฟล์จริงมา parse header ทีละ tensor**
+งานวิจัยนี้ศึกษา **โมเดลภาษา 4 ตระกูล (เล็ก→ยักษ์)** แบบ "เปิดดูของจริง" — ไม่ใช่อ่าน model card แล้วเชื่อ แต่ **โหลดไฟล์จริงมา parse header ทีละ tensor (3 ตัวเล็ก) + Search World deep study แบบลึกสร้างเองได้ (ตัวยักษ์)**
 
-| โมเดล | เวอร์ชันที่ศึกษา | รูปแบบที่ตรวจ | Session |
-|---|---|---|---|
-| Qwen3-4B | Alibaba, Apr 2025 | safetensors BF16 + GGUF Q4_K_M | S41 |
-| Gemma 4 E4B-it | Google, May 2025 | safetensors BF16 (instruct) | S39B–S40 |
-| Llama 3.1 8B Instruct | Meta, Jul 2024 | GGUF Q4_K_M + original safetensors | S43–S43A |
+| โมเดล | เวอร์ชันที่ศึกษา | รูปแบบที่ตรวจ | Session | วิธีตรวจ |
+|---|---|---|---|---|
+| Qwen3-4B | Alibaba, Apr 2025 | safetensors BF16 + GGUF Q4_K_M | S41 | โหลดไฟล์จริง 76 checks |
+| Gemma 4 E4B-it | Google, May 2025 | safetensors BF16 (instruct) | S39B–S40 | โหลดไฟล์จริง 30 checks |
+| Llama 3.1 8B Instruct | Meta, Jul 2024 | GGUF Q4_K_M + original safetensors | S43–S43A | โหลดไฟล์จริง 60 checks |
+| **DeepSeek V3** | DeepSeek-AI, Dec 2024 | **config+paper+GitHub (671B/37B, MLA, MoE, FP8, DualPipe)** | **DeepSeek-V3-DeepStudy 2026-08-28** | **Search World 4 parallel deep searches + HF raw config + triangulation ≥2 แหล่ง** |
 
-**"6 รูปแบบ" ในรายงานนี้** = 3 โมเดล × 2 ฟอร์แมตหลัก (safetensors original / GGUF quantized) ครอบคลุมทั้งฝั่ง research ecosystem (transformers/vLLM) และฝั่ง local runtime (llama.cpp/Ollama/LM Studio)
+**"7 รูปแบบ" ในรายงานนี้** = 3 โมเดลเล็ก × 2 ฟอร์แมต + 1 โมเดลยักษ์ (config/paper/code) ครอบคลุมทั้งฝั่ง research ecosystem (transformers/vLLM) และฝั่ง local runtime (llama.cpp/Ollama/LM Studio) และฝั่ง scale-out (MoE+MLA)
 
 ## 1.2 วิธีตรวจสอบ — ไม่เชื่อ ต้องพิสูจน์
 
@@ -27,15 +28,17 @@
 Qwen3-4B        63/63 PASS (safetensors) + 13/13 PASS (GGUF)
 Gemma 4 E4B-it  30/30 PASS
 Llama 3.1 8B    21/21 PASS (GGUF) + 39/39 PASS (original)
+DeepSeek V3     21 claims verified via Search World (paper↔HF config↔GitHub, ≥2 แหล่ง/claim) — Build-Ready
 ─────────────────────────────────────────────────────────
-รวม             166 checks PASS / 0 FAIL
+รวม             166 checks PASS / 0 FAIL + 21 DeepSeek claims verified
 ```
 
 ## 1.3 แหล่งข้อมูลในรายงานนี้
 
-- **Primary (ตรวจเอง):** reports 23 ไฟล์ใน repo นี้ — `docs/research/{qwen3-4B,gemma-4-E4B,llama3.1-8B}/`
+- **Primary (ตรวจเอง):** reports 23 ไฟล์ใน repo นี้ — `docs/research/{qwen3-4B,gemma-4-E4B,llama3.1-8B}/` + DeepSeek V3 Deep Study `docs/research/deepseek-v3/DEEPSEEK-V3-DEEP-STUDY.md`
+- **Primary (Search World):** DeepSeek V3 — arXiv:2412.19437 (32p), HF config raw, GitHub deepseek-ai/DeepSeek-V3 + DualPipe, cross-verified
 - **Secondary (งานวิจัยคนอื่น):** benchmark scores จาก llm-stats.com, llmbase.ai (GPQA, MMLU-Pro, MATH500, GSM8K, HumanEval ฯลฯ)
-- **Papers อ้างอิง:** RoFormer (RoPE), YaRN (context extension), Gemma 3 technical report (sliding window), Llama 3 paper (rope scaling)
+- **Papers อ้างอิง:** RoFormer (RoPE), YaRN (context extension), Gemma 3 technical report (sliding window), Llama 3 paper (rope scaling), **DeepSeek V3 Technical Report + DualPipe repo**
 
 ## 1.4 ข้อจำกัดที่ควรรู้ก่อนอ่าน
 

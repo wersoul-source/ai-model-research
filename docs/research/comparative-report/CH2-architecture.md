@@ -96,18 +96,47 @@ Language Model — 32 layers, full attention ทุก layer
 
 **ผังอ้างอิง:** `docs/research/llama3.1-8B/model-architecture.mmd` · `llama-vs-qwen.mmd`
 
-## 2.4 สรุปเทียบโครงสร้าง — ตารางเดียวจบ
+## 2.4 DeepSeek V3 — "MoE ยักษ์ประหยัด"
 
-| มิติ | Qwen3-4B | Gemma 4 E4B-it | Llama 3.1 8B |
+**จุดตั้งใจ:** 671B แต่จ่าย 37B/โทเคน — แยก capacity จาก compute ด้วย MoE + แยก storage จาก compute ด้วย MLA + แยก communication จาก compute ด้วย FP8/DualPipe
+
+```
+Input: ข้อความ (129280 vocab → 7168)
+  │
+  ├─ BPE Tokenizer (vocab 129,280) → embed [129280, 7168]
+  ▼
+Language Model — 61 layers
+├─ Layers 0-2: Dense FFN 18432 (full) — ให้ base stability
+├─ Layers 3-60: MLA (128 heads, dc=512, dc'=1536, rope 64) + DeepSeekMoE ×58
+│   ├─ MLA: c^{KV} 512 + k^R 64 cache (-93% vs MHA) + RMSNorm หลัง latent
+│   └─ MoE: 1 shared + 256 routed (2048 each), top-8, group 8→4, scale 2.5
+└─ MTP Layer 61: Emb+OutHead+TRM (14B) — predict token t+2
+      ▼
+Output [129280] → softmax — FP8 weights, BF16 ต้อง convert
+```
+
+**4 เทคนิคเด่น (ไม่มีใน 3 ตัวเล็ก):**
+
+| เทคนิค | ทำอะไร | ทำไมสำคัญ |
+|---|---|---|
+| **MLA 512+64** | cache latent 512+64 แทน k/v 32768 dim | KV -93% → 128K batch ได้ |
+| **256 fine-grained + 1 shared** | 256 experts เล็กๆ เลือก 8 + shared ตายตัว 1 | capacity 671B แต่ active 37B |
+| **Aux-loss-free (bias γ0.001)** | bias update แทน aux loss | balance ไม่ทำลาย language loss |
+| **FP8+DualePipe+M=4** | FP8 W8A8 + bidirectional pipeline + ≤4 nodes/token | train 14.8T ด้วย 2.788M H800 ไม่ spike |
+
+## 2.5 สรุปเทียบโครงสร้าง — ตารางเดียวจบ (4 โมเดล)
+
+| มิติ | Qwen3-4B | Gemma 4 E4B-it | Llama 3.1 8B | **DeepSeek V3** |
 |---|---|---|---|
-| Layers | 36 (full ทั้งหมด) | 42 (35 sliding + 7 full) | 32 (full ทั้งหมด) |
-| Hidden size | 2,560 | 2,560 | 4,096 |
-| Attention heads | GQA 32Q/8KV + QK-Norm | hybrid + KV share 18/42 | GQA 32Q/8KV ธรรมดา |
-| Vocab | 151,936 | **262,144** (ใหญ่สุด) | 128,256 |
-| Embedding tie | ✓ tie (ประหยัด) | — (มี PLE แทน) | ✗ no-tie (จ่าย 13%) |
-| Multimodal | ✗ text+tool | ✓ text+ภาพ+เสียง+วิดีโอ | ✗ text+tool |
-| Thinking mode | ✓ native 3 ชั้น | ✗ | ✗ |
-| ความยาว chat template | ~10KB (thinking+tools) | 18.6KB (multimodal) | ฝัง tokenizer_config 50KB |
+| Layers | 36 (full) | 42 (35 sliding+7 full) | 32 (full) | **61 (3 dense +58 MoE)** |
+| Hidden size | 2,560 | 2,560 | 4,096 | **7,168** |
+| Attention | GQA 32Q/8KV + QK-Norm | hybrid + KV share | GQA 32Q/8KV | **MLA 128H dc512/dc'1536 rope64** |
+| Vocab | 151,936 | **262,144** | 128,256 | 129,280 |
+| Embedding tie | ✓ tie | PLE | ✗ no-tie | ✗ no-tie |
+| Multimodal | ✗ | ✓ | ✗ | ✗ (text only) |
+| MoE | ✗ dense | ✗ dense | ✗ dense | **✓ 256+1 top8** |
+| KV cache @128K | ~18GB | ~3.8GB | ~16GB | **~576 dim/token (MLA) — ถูกสุดถ้านับต่อ param** |
+| Thinking/MTP | ✓ thinking 3 ชั้น | ✗ | ✗ | **MTP D=1 (predict 2 tokens)** |
 
 ---
 

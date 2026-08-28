@@ -13,7 +13,7 @@
 | ความปลอดภัย | header-only format ไม่รันโค้ด | metadata map ชัดเจน |
 | ใช้เมื่อ | fine-tune, serve production, ศึกษา architecture | รันบนเครื่องทรงพลังต่ำ / local inference |
 
-## 3.2 ตารางขนาดจริง — 6 รูปแบบที่ตรวจแล้ว
+## 3.2 ตารางขนาดจริง — 6+1 รูปแบบ (3 เล็ก + 1 ยักษ์)
 
 | # | โมเดล × ฟอร์แมต | ขนาดจริง | Tensors | หมายเหตุ |
 |---|---|---|---|---|
@@ -23,6 +23,7 @@
 | 4 | Llama 3.1 8B safetensors BF16 | **16.06 GB** | 291 (4 shards: 82+104+100+5) | no-tie → embed+lm_head แยก |
 | 5 | Llama 3.1 8B GGUF Q4_K_M | **4.92 GB** | 292 (+rope_freqs F32 [64]) | ประหยัด **69.4%** |
 | 6 | Gemma GGUF (community) | ~4–5 GB (ประมาณการ) | — | ยังไม่ได้ตรวจ — ดูข้อจำกัด CH1 |
+| 7 | **DeepSeek V3 FP8** | **685 GB (671B main +14B MTP)** | **~700+ tensors (61 layers + MTP)** | **FP8 only — BF16 ต้อง convert, รันต้อง 320 GPUs ขั้นต่ำ** |
 
 ## 3.3 สามข้อสังเกตจากการ quantize จริง
 
